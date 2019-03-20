@@ -1,0 +1,130 @@
+#!/bin/sh
+
+scroll=$1
+name=$2
+xml=activity_$name.xml
+java=$name.java
+echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<android.support.constraint.ConstraintLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"
+xmlns:app=\"http://schemas.android.com/apk/res-auto\"
+xmlns:tools=\"http://schemas.android.com/tools\"
+android:layout_width=\"match_parent\"
+android:layout_height=\"match_parent\"
+tools:context=\".$name\"" > $xml
+
+if [ "$scroll" = "-s" ]
+then
+    echo ">
+
+
+    <ScrollView
+        android:id=\"@+id/scrollView2\"
+        android:layout_width=\"match_parent\"
+        android:layout_height=\"match_parent\"
+        android:layout_marginStart=\"8dp\"
+        android:layout_marginEnd=\"8dp\"
+	android:layout_marginTop=\"8dp\"
+        android:clipToPadding=\"true\"
+        app:layout_constraintEnd_toEndOf=\"parent\"
+        app:layout_constraintHorizontal_bias=\"0.0\"
+        app:layout_constraintStart_toStartOf=\"parent\"
+        app:layout_constraintTop_toTopOf=\"parent\">
+
+        <android.support.constraint.ConstraintLayout
+            android:id=\"@+id/layoutView\"
+            android:layout_width=\"match_parent\"
+            android:layout_height=\"wrap_content\"
+	    android:onClick=\"screenTapped\">" >> $xml
+else
+    echo "android:layout_marginStart=\"8dp\"
+    android:layout_marginTop=\"8dp\"
+    android:layout_marginEnd=\"8dp\"
+    android:clipToPadding=\"true\"
+    android:onClick=\"screenTapped\"
+    android:id=\"@+id/layoutView\">" >> $xml
+fi
+
+echo "package com.example.practice;
+
+import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.example.practice.R;
+import com.example.practice.Template;
+
+public class $name extends Template {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_$name);
+        findViews((ViewGroup) findViewById(R.id.layoutView));
+        tapHelper();
+    }
+    public void screenTapped(View view)
+    {
+        tapHelper();
+    }
+}" > $java
+
+color="GhostWhite"
+flag=0
+imagevar=0
+textvar=0
+topid="parent"
+sideid="parent"
+bottomid="parent"
+while read line
+do
+    if [ "$line" = "b" ]
+    then
+	color="blueMask"
+	flag=1
+    elif [ "$line" = "r" ]
+    then
+	color="redMask"
+	flag=1
+    elif [ "$line" = "y" ]
+    then
+	color="yellowMask"
+	flag=1
+    elif [ "$line" = "w" ]
+    then
+	color="GhostWhite"
+	continue
+    fi
+
+    if [ $flag -eq 1 ]
+    then
+	echo "<ImageView
+	      android:id=\"@+id/imageView$imagevar\"
+              android:layout_width=\"@dimen/mask_value\"
+              android:layout_height=\"@dimen/mask_value\"
+	      android:layout_marginTop=\"8dp\"
+              android:visibility=\"visible\"" >> $xml
+	if [ $imagevar -eq 0 ]
+	then
+	    echo "android:layout_marginStart=\"8dp\"
+	    	  app:layout_constraintStart_toStartOf=\"parent\"
+                  app:layout_constraintTop_toTopOf=\"parent\"" >> $xml
+	elif [ $imagevar % 2 -eq 0 ]
+	then
+	    echo "android:layout_marginStart=\"8dp\"		  
+		  app:layout_constraintStart_toStartOf=\"parent\"
+		  app:layout_constraintTop_toBottomOf=\"$topid\"" >> $xml
+	else
+	    echo "android:layout_marginEnd=\"8dp\"
+		  app:layout_constraintEnd_toEndOf=\"parent\"
+		  app:layout_constraintTop_toBottomOf=\"$topid\"" >> $xml
+	fi
+	topid="imageView$imagevar"
+	imagevar=$imagevar+1
+	flag=0
+	continue
+    fi
+done
+
+	
+	
+       
